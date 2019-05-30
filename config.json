@@ -1,0 +1,38 @@
+{
+    "name"          :   "MovieLens Recs",
+    "data"          :   {
+                            "type"      :   "CSVDataManager",
+                            "path"      :   "/home/kiran/Documents/DATA/ml-1m",
+                            "loader"    :   {
+                                                "shuffle"       : true,
+                                                "batch_size"    : 240,
+                                                "num_workers"   : 4,
+                                                "drop_last"     : true
+                                            },
+                            "splits"    :   {
+                                                "train" : 0.8, 
+                                                "val"   : 0.2                                            
+                                            }
+                        },
+    "optimizer"     :   {
+                            "lr"            : 0.005,
+                            "weight_decay"  : 0.01
+                        },
+    "lr_scheduler"   :   {
+
+                            "step_size" : 10,
+                            "gamma"     : 0.5
+                        },
+    "model"         :   {
+                            "type"      :   "AttentionalFactorizationMachine",
+                            "args"      :   {
+                                                 "fm_k" : 3,
+                                                 "afm_t": 2
+                                            }
+                        },
+    "train"         :   {
+                            "epochs"    :   100,
+                            "save_dir"  :   "saved_a/",
+                            "early_stop":   8
+                        }
+}
