@@ -5,7 +5,6 @@ from .base_model import BaseModel
 
 from .layers import FirstOrder, SecondOrder, AttentionSecondOrder, Attention
 
-#from torchparse import parse_cfg
 
 class FactorizationMachine(BaseModel):
 
@@ -42,6 +41,3 @@ class AttentionalFactorizationMachine(BaseModel):
         bias = self.bias(batch)
         sec = self.sec(batch)
         return self.global_bias + bias + sec
-
-
-

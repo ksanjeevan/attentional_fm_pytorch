@@ -3,15 +3,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class FirstOrder(nn.Module):
 
     def __init__(self, dims):
         super(FirstOrder, self).__init__()
 
-        self.bias_user = nn.Embedding(dims['users'], 1)        
+        self.bias_user = nn.Embedding(dims['users'], 1)
         self.bias_movie = nn.Embedding(dims['movies'], 1)
-        # Add 1 to allow for padding idx      
-        self.bias_genere = nn.Embedding(dims['generes']+1, 1, padding_idx=0)   
+        # Add 1 to allow for padding idx
+        self.bias_genere = nn.Embedding(dims['generes'] + 1, 1, padding_idx=0)
 
     def forward(self, batch):
         users, movies, gens = batch
@@ -28,10 +29,10 @@ class SecondOrder(nn.Module):
     def __init__(self, dims, k):
         super(SecondOrder, self).__init__()
 
-        self.emb_user = nn.Embedding(dims['users'], k)        
+        self.emb_user = nn.Embedding(dims['users'], k)
         self.emb_movie = nn.Embedding(dims['movies'], k)
-        # Add 1 to allow for padding idx      
-        self.emb_genere = nn.Embedding(dims['generes']+1, k, padding_idx=0)
+        # Add 1 to allow for padding idx
+        self.emb_genere = nn.Embedding(dims['generes'] + 1, k, padding_idx=0)
 
     def _get_stacked_embedded(self, users, movies, gens):
         v_u = self.emb_user(users).unsqueeze(1)
@@ -46,9 +47,10 @@ class SecondOrder(nn.Module):
 
         ret = torch.zeros(v.size(0)).to(v.device)
         for i in range(v.size(1)):
-            for j in range(i+1, v.size(1)):
-                ret += (v[:,i] * v[:,j]).sum(-1)
+            for j in range(i + 1, v.size(1)):
+                ret += (v[:, i] * v[:, j]).sum(-1)
         return ret
+
 
 class Attention(nn.Module):
 
@@ -59,7 +61,8 @@ class Attention(nn.Module):
 
     def forward(self, x):
         return F.relu(self.lin(x)).mm(self.h)
-        
+
+
 class AttentionSecondOrder(SecondOrder):
 
     def __init__(self, dims, k, t):
@@ -76,19 +79,14 @@ class AttentionSecondOrder(SecondOrder):
         e = []
         sumatori = []
         for i in range(v.size(1)):
-            for j in range(i+1, v.size(1)):
-                elem_wise = v[:,i] * v[:,j]
+            for j in range(i + 1, v.size(1)):
+                elem_wise = v[:, i] * v[:, j]
 
-                e.append( self.att(elem_wise) )
+                e.append(self.att(elem_wise))
                 sumatori.append(elem_wise)
 
         alphas = F.softmax(torch.cat(e, -1), 1)
         for i in range(len(sumatori)):
-            ret += alphas[:,i:i+1] * sumatori[i]
-
+            ret += alphas[:, i:i + 1] * sumatori[i]
 
         return (ret.mm(self.p)).squeeze()
-
-
-
-
